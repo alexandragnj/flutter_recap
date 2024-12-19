@@ -4,44 +4,119 @@ void main() {
   runApp(const MyApp());
 }
 
-/*class Person {
-  final String name;
+// ex 1
+class Area {
+  final double length;
+  final double width;
+  final double area;
 
-  Person(this.name);
+  //const Area(this.length, this.width) : area =length * width;
+  const Area._internal(this.length, this.width) : area = length * width;
 
-  void printName(){
-    print('I will now print:');
-    print(name);
+  factory Area(double l, double w) {
+    if (l < 0 || w < 0) {
+      throw Exception("Length and breath must be positive.");
+    } else {
+      return Area._internal(l, w);
+    }
   }
 
-  
-  void run() {
-    print('Running');
-  }
-
-  void breathe() {
-    print('Breathing');
-  }
-}*/
-
-abstract class LivingThing{
-  void breathe(){
-    print('Living thing is breathing');
-  }
-
-  void move(){
-    print('I am moving');
+  void display() {
+    print("Area is $area");
   }
 }
 
-class Cat extends LivingThing{
+// ex 2
+class Person {
+  String firstName;
+  String lastName;
 
+  Person(this.firstName, this.lastName);
+
+  //factory
+  factory Person.fromMap(Map<String, Object> map) {
+    final firstName = map['firstName'] as String;
+    final lastName = map['lastName'] as String;
+    return Person(firstName, lastName);
+  }
+}
+
+// ex 3
+enum ShapeType { circle, rectangle }
+
+abstract class Shape {
+
+  factory Shape(ShapeType st){
+    if(st== ShapeType.circle){
+      return Circle();
+    } else if(st== ShapeType.rectangle){
+      return Rectangle();
+    } else {
+      throw Exception('No shape');
+    }
+  }
+  void draw();
+}
+
+class Circle implements Shape {
+  @override
+  void draw() {
+    print('Drawing Circle');
+  }
+}
+
+class Rectangle implements Shape {
+  @override
+  void draw() {
+    print('Drawing rectangle');
+  }
+}
+
+// ex 4
+class Person2{
+  final String name;
+
+  Person2._internal(this.name);
+
+  static final Map<String, Person2> _cache=<String, Person2>{};
+
+  factory Person2(String name){
+    if(_cache.containsKey('name')){
+      return _cache[name]!;
+    } else {
+      final person2=Person2._internal(name);
+      _cache[name]=person2;
+      return person2;
+    }
+  }
 }
 
 void test() {
-  final fluffers=Cat();
-  fluffers.move();
-  fluffers.breathe();
+  // Area a = Area(-150, 250); //area can't be negative, we have to create a construct to vaidate de input (factory)
+  Area a1 = Area(150, 250);
+  a1.display();
+
+  Person p = Person('Baimal', 'Jackson');
+  print('Person fullname is ${p.firstName} ${p.lastName}');
+
+  var myMap = {'firstName': 'Jhon', 'lastName': 'Mark'};
+  Person p2 = Person.fromMap(myMap);
+  print('Person fullname is ${p2.firstName} ${p2.lastName}');
+
+  List<Shape> shapes=[];
+  shapes.add(Shape(ShapeType.circle));
+  shapes.add(Shape(ShapeType.rectangle));
+  for(Shape i in shapes){
+    i.draw();
+  }
+
+  final person1=Person2('John');
+  final person2=Person2('John');
+  final person3=Person2('John');
+
+  print(person2.hashCode);
+  print(person1.hashCode);
+  print(person3.hashCode);
 }
 
 class MyApp extends StatelessWidget {
