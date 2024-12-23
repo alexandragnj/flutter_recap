@@ -4,119 +4,53 @@ void main() {
   runApp(const MyApp());
 }
 
-// ex 1
-class Area {
-  final double length;
-  final double width;
-  final double area;
-
-  //const Area(this.length, this.width) : area =length * width;
-  const Area._internal(this.length, this.width) : area = length * width;
-
-  factory Area(double l, double w) {
-    if (l < 0 || w < 0) {
-      throw Exception("Length and breath must be positive.");
-    } else {
-      return Area._internal(l, w);
-    }
-  }
-
-  void display() {
-    print("Area is $area");
-  }
-}
-
-// ex 2
-class Person {
-  String firstName;
-  String lastName;
-
-  Person(this.firstName, this.lastName);
-
-  //factory
-  factory Person.fromMap(Map<String, Object> map) {
-    final firstName = map['firstName'] as String;
-    final lastName = map['lastName'] as String;
-    return Person(firstName, lastName);
-  }
-}
-
-// ex 3
-enum ShapeType { circle, rectangle }
-
-abstract class Shape {
-
-  factory Shape(ShapeType st){
-    if(st== ShapeType.circle){
-      return Circle();
-    } else if(st== ShapeType.rectangle){
-      return Rectangle();
-    } else {
-      throw Exception('No shape');
-    }
-  }
-  void draw();
-}
-
-class Circle implements Shape {
-  @override
-  void draw() {
-    print('Drawing Circle');
-  }
-}
-
-class Rectangle implements Shape {
-  @override
-  void draw() {
-    print('Drawing rectangle');
-  }
-}
-
-// ex 4
-class Person2{
+//ex 1
+class FamilyMember {
   final String name;
 
-  Person2._internal(this.name);
+  const FamilyMember({required this.name});
 
-  static final Map<String, Person2> _cache=<String, Person2>{};
+  @override
+  String toString() => 'Family member (name = $name)';
+}
 
-  factory Person2(String name){
-    if(_cache.containsKey('name')){
-      return _cache[name]!;
-    } else {
-      final person2=Person2._internal(name);
-      _cache[name]=person2;
-      return person2;
+class Family {
+  final List<FamilyMember> members;
+
+  const Family({required this.members});
+
+  @override
+  String toString() => 'Family (members = $members)';
+}
+
+extension ToFamily on FamilyMember {
+  //member1 + member2
+  //"this" + "other"
+  Family operator +(FamilyMember other) => Family(
+        members: [this, other],
+      );
+}
+
+//ex 2
+extension Times<T> on Iterable<T> {
+  Iterable<T> operator *(int times) sync*{
+    for(var i=0; i<times; i++){
+      yield* this;
     }
   }
+
 }
 
 void test() {
-  // Area a = Area(-150, 250); //area can't be negative, we have to create a construct to vaidate de input (factory)
-  Area a1 = Area(150, 250);
-  a1.display();
+  //ex1
+  final dad = FamilyMember(name: 'Dad');
+  final mom = FamilyMember(name: 'Mom');
+  final family = dad + mom;
+  print(family);
 
-  Person p = Person('Baimal', 'Jackson');
-  print('Person fullname is ${p.firstName} ${p.lastName}');
-
-  var myMap = {'firstName': 'Jhon', 'lastName': 'Mark'};
-  Person p2 = Person.fromMap(myMap);
-  print('Person fullname is ${p2.firstName} ${p2.lastName}');
-
-  List<Shape> shapes=[];
-  shapes.add(Shape(ShapeType.circle));
-  shapes.add(Shape(ShapeType.rectangle));
-  for(Shape i in shapes){
-    i.draw();
-  }
-
-  final person1=Person2('John');
-  final person2=Person2('John');
-  final person3=Person2('John');
-
-  print(person2.hashCode);
-  print(person1.hashCode);
-  print(person3.hashCode);
+  //ex2
+  const names=['Seth', 'Kathy', 'Ethan', 'Megan'];
+  print(names*2);
 }
 
 class MyApp extends StatelessWidget {
