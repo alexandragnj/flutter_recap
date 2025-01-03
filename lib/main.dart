@@ -4,53 +4,160 @@ void main() {
   runApp(const MyApp());
 }
 
-//ex 1
-class FamilyMember {
+int? add([int? a, int? b]) {
+  return a + b;
+}
+//ex 3 Addition of two optional integers
+
+extension NullableAdd<T extends num> on T? {
+  T? operator +(T? other) {
+    final thisShadow = this;
+    //if this != null $$ other ==null, return this
+    if (this != null && other == null) {
+      return this as T;
+    }
+    //if this == null $$ other !=null, return other
+    else if (this == null && other != null) {
+      return other;
+    }
+    //if this != null $$ other !=null, return this + other
+    else if (thisShadow != null && other != null) {
+      return thisShadow + other as T;
+    }
+    //if this != null $$ other !=null, return 0
+    else {
+      return 0 as T;
+    }
+  }
+}
+
+// ex 4 Subtracting string from another string
+extension Remove on String {
+  String operator -(String other) => replaceAll(other, '');
+}
+
+// ex 5 Subtracting iterable from another iterable
+extension RemoveMinus<T> on Iterable<T> {
+  Iterable<T> operator -(Iterable<T> other) =>
+      this.where((element) => !other.contains(element));
+}
+
+//ex 6 Maps
+extension MapOperations<K, V> on Map<K, V> {
+  Map<K, V> operator +(Map<K, V> other) => {
+        ...this,
+        ...other,
+      };
+
+  Map<K, V> operator -(Map<K, V> other) {
+    return {...this}..removeWhere((key, value) {
+        return other.containsKey(key) && other[key] == value;
+      });
+  }
+
+  Iterable<Map<K, V>> operator *(int times) sync* {
+    for (var i = 0; i < times; i++) {
+      yield this;
+    }
+  }
+}
+
+// ex 7 Cross data type operators
+class Person {
   final String name;
 
-  const FamilyMember({required this.name});
+  const Person({required this.name});
 
   @override
-  String toString() => 'Family member (name = $name)';
+  String toString() => 'Person (name=$name)';
+}
+
+class Pet {
+  final String name;
+
+  const Pet({required this.name});
+
+  @override
+  String toString() => 'Pet (name=$name)';
 }
 
 class Family {
-  final List<FamilyMember> members;
+  final List<Person> members;
+  final List<Pet> pets;
 
-  const Family({required this.members});
+  const Family({
+    required this.members,
+    required this.pets,
+  });
 
   @override
-  String toString() => 'Family (members = $members)';
+  String toString() => 'Family (members =$members, pets=$pets)';
 }
 
-extension ToFamily on FamilyMember {
-  //member1 + member2
-  //"this" + "other"
-  Family operator +(FamilyMember other) => Family(
-        members: [this, other],
-      );
+extension on Person {
+  Family operator +(Person other) => Family(members: [this, other], pets: []);
+
+  Family operator &(Pet other) => Family(members: [this], pets: [other]);
 }
 
-//ex 2
-extension Times<T> on Iterable<T> {
-  Iterable<T> operator *(int times) sync*{
-    for(var i=0; i<times; i++){
-      yield* this;
-    }
-  }
+extension on Family {
+  Family operator &(Pet other) =>
+      Family(members: members, pets: [...pets, other]);
 
+  Family operator +(Person other) =>
+      Family(members: [...members, other], pets: pets);
+
+  Family operator ^(Family other) => Family(
+      members: [...members, ...other.members], pets: [...pets, ...other.pets]);
+}
+
+// ex 8 Operators on class definitions
+class Person2 {
+  final int age;
+
+  Person2({required this.age});
+
+  Person2 operator +(int age) => Person2(age: this.age + age);
+
+  @override
+  String toString() => 'Person (age =$age)';
 }
 
 void test() {
-  //ex1
-  final dad = FamilyMember(name: 'Dad');
-  final mom = FamilyMember(name: 'Mom');
-  final family = dad + mom;
+  //ex3
+  print(add(3, 2));
+
+  //ex4
+  print('Foo bar' - 'Foo'); // bar
+
+  //ex5
+  print([1, 2, 3] - [1, 2]);
+
+  //ex6
+  print({'name': 'John', 'age': 42} + {'address': '123 Main St'});
+  print({'name': 'John', 'age': 42} - {'age': 42});
+  print({'name': 'John'} * 2);
+
+  //ex7
+  final mom = Person(name: 'Jane');
+  final dad = Person(name: 'John');
+  final son = Person(name: 'Jack');
+  final daughter = Person(name: 'Jill');
+
+  final whiskers = Pet(name: 'Whiskers');
+
+  final family = mom + dad;
   print(family);
 
-  //ex2
-  const names=['Seth', 'Kathy', 'Ethan', 'Megan'];
-  print(names*2);
+  final withWhiskers = family & whiskers;
+  print(withWhiskers);
+
+  final withSon = withWhiskers + son;
+  print(withSon);
+
+  //ex8
+  final meThisYear=Person2(age: 30);
+  print(meThisYear +1);
 }
 
 class MyApp extends StatelessWidget {
