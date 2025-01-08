@@ -4,44 +4,25 @@ void main() {
   runApp(const MyApp());
 }
 
-/*class Person {
-  final String name;
-
-  Person(this.name);
-
-  void printName(){
-    print('I will now print:');
-    print(name);
-  }
-
-  
-  void run() {
-    print('Running');
-  }
-
-  void breathe() {
-    print('Breathing');
-  }
-}*/
-
-abstract class LivingThing{
-  void breathe(){
-    print('Living thing is breathing');
-  }
-
-  void move(){
-    print('I am moving');
-  }
+Future<int> heavyFutureThatMultipliesByTwo(int a) {
+  return Future.delayed(const Duration(seconds: 3), () {
+    return a * 2;
+  });
 }
 
-class Cat extends LivingThing{
-
+Stream<String> getName() {
+  return Stream.periodic(const Duration(seconds: 1), (value) {
+    return 'foo';
+  });
 }
 
-void test() {
-  final fluffers=Cat();
-  fluffers.move();
-  fluffers.breathe();
+void test() async {
+  final result = await heavyFutureThatMultipliesByTwo(10);
+  print(result);
+
+  await for (final value in getName()){
+    print(value);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -122,7 +103,10 @@ class _MyHomePageState extends State<MyHomePage> {
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
         // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
@@ -151,7 +135,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headlineMedium,
             ),
           ],
         ),
