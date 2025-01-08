@@ -4,25 +4,44 @@ void main() {
   runApp(const MyApp());
 }
 
-Future<int> heavyFutureThatMultipliesByTwo(int a) {
-  return Future.delayed(const Duration(seconds: 3), () {
-    return a * 2;
-  });
+//generators
+Iterable<int> getOneTwoThree() sync*{
+  yield 1;
+  yield 2;
+  yield 3;
 }
 
-Stream<String> getName() {
-  return Stream.periodic(const Duration(seconds: 1), (value) {
-    return 'foo';
-  });
+
+//generics
+class PairOfStrings {
+  final String value1;
+  final String value2;
+  PairOfStrings(this.value1, this.value2);
+}
+
+class PairOfIntegers {
+  final String value1;
+  final String value2;
+  PairOfIntegers(this.value1, this.value2);
+}
+
+class Pair<A,B>{
+  final A value1;
+  final B value2;
+  Pair(this.value1, this.value2);
+
 }
 
 void test() async {
-  final result = await heavyFutureThatMultipliesByTwo(10);
-  print(result);
-
-  await for (final value in getName()){
+  for(final value in getOneTwoThree()) {
     print(value);
+    if(value==2) {
+      break;
+      // => 3 yield 3 doesn't get calculated
+    }
   }
+
+  final names=Pair('foo', 2);
 }
 
 class MyApp extends StatelessWidget {
