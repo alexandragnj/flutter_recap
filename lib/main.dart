@@ -1,47 +1,134 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-//generators
-Iterable<int> getOneTwoThree() sync*{
-  yield 1;
-  yield 2;
-  yield 3;
+extension on int {
+  int get timesFour => this * 4;
 }
 
-
-//generics
-class PairOfStrings {
-  final String value1;
-  final String value2;
-  PairOfStrings(this.value1, this.value2);
+//ex 1 extending string
+extension on String {
+  String get reversed => this.split('').reversed.join();
 }
 
-class PairOfIntegers {
-  final String value1;
-  final String value2;
-  PairOfIntegers(this.value1, this.value2);
+//ex 2 sum of iterable
+extension SumOfIterable<T extends num> on Iterable<T> {
+  T get sum => reduce((a, b) => a + b as T);
 }
 
-class Pair<A,B>{
-  final A value1;
-  final B value2;
-  Pair(this.value1, this.value2);
+//ex 3 range on int
+extension on int {
+  Iterable<int> to(int end, {bool inclusive = true}) => end > this
+      ? [for (var i = this; i < end; i++) i, if (inclusive) end]
+      : [for (var i = this; i > end; i--) i, if (inclusive) end];
+}
 
+//ex 4 finding duplicate values
+extension on Iterable {
+  bool get containsDuplicateValues => toSet().length != length;
+}
+
+//ex 5 finding and mapping keys and values on maps
+extension Find<K, V, R> on Map<K, V> {
+  R? find<T>(
+    K key,
+    R? Function(T value) cast,
+  ) {
+    final value = this[key];
+    if (value != null && value is T) {
+      return cast(value as T);
+    } else {
+      return null;
+    }
+  }
+}
+
+//ex 6 extending enums
+enum AnimalType { cat, dog, goldFish }
+
+extension on Enum {
+  bool get nameContainsUpperCaseLetters => name.contains(RegExp(r'[A-Z]'));
+}
+
+//ex 7 extending functions
+int add(int a, int b) => a + b;
+
+int substract(int a, int b) => a - b;
+
+typedef IntFunction = int Function(int, int);
+
+extension on IntFunction {
+  int callWithRandomValues() {
+    final rnd1 = Random().nextInt(100);
+    final rnd2 = Random().nextInt(100);
+    print('Random values =$rnd1, $rnd2');
+    return call(rnd1, rnd2);
+  }
+}
+
+//ex 8 why do we need names for extension like ex 2
+class Person {
+  final String name;
+  final int age;
+
+  const Person({required this.name, required this.age});
+}
+
+extension ShortDescription on Person {
+  String get description => '$name ($age)';
+}
+
+extension LongDescription on Person {
+  String get description => '$name in ($age) years old';
 }
 
 void test() async {
-  for(final value in getOneTwoThree()) {
-    print(value);
-    if(value==2) {
-      break;
-      // => 3 yield 3 doesn't get calculated
-    }
-  }
+  //ex1
+  print('Hello'.reversed);
 
-  final names=Pair('foo', 2);
+  //ex2
+  print([1, 2, 2].sum);
+  print([1.1, 2.2, 3.3].sum);
+
+  //ex3
+  //1.to(10) -> Iterable[1,2,3,4,5,6,7,8,9,10]
+  //1.to(10, inclusive: false)
+  print(1.to(10));
+  print(10.to(1));
+  print(1.to(10, inclusive: false));
+
+  //ex4
+  print([1, 2, 3, 1].containsDuplicateValues); //true
+  print(['a', 'b', 'A'].containsDuplicateValues); //false
+  print(['a', 'b', 'a'].containsDuplicateValues); //true
+
+  //ex5
+  final json = {
+    'Name': 'Foo',
+    'Age': 42,
+  };
+
+  final String? ageAsString = json.find<int>(
+    'age',
+    (int age) => age.toString(),
+  );
+  print(ageAsString);
+
+  //ex6
+  print(AnimalType.cat.nameContainsUpperCaseLetters); //false
+  print(AnimalType.goldFish.nameContainsUpperCaseLetters); //true
+
+  //ex7
+  print(add.callWithRandomValues());
+
+  //ex8
+  const jack=Person(name: 'Jack', age: 20);
+  print(ShortDescription(jack).description);
+  print(LongDescription(jack).description);
 }
 
 class MyApp extends StatelessWidget {
@@ -122,10 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
         // change color while the other colors stay the same.
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
@@ -154,10 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
