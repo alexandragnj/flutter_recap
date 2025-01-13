@@ -6,156 +6,143 @@ void main() {
   runApp(const MyApp());
 }
 
-extension on int {
-  int get timesFour => this * 4;
+//ex 1 generics integer or double
+T eitherIntOrDouble<T extends num>() {
+  switch (T) {
+    case int:
+      return 1 as T;
+    case double:
+      return 1.0 as T;
+    default:
+      throw Exception('Not supported');
+  }
 }
 
-//ex 1 extending string
-extension on String {
-  String get reversed => this.split('').reversed.join();
-}
+//ex 2 type matching
+/*bool doTypesMatch(Object a, Object b) {
+  return a.runtimeType == b.runtimeType;
+}*/
+bool doTypesMatch<L, R>(L a, R b) => L == R;
 
-//ex 2 sum of iterable
-extension SumOfIterable<T extends num> on Iterable<T> {
-  T get sum => reduce((a, b) => a + b as T);
-}
+//ex 3 constrained generic type definition
 
-//ex 3 range on int
-extension on int {
-  Iterable<int> to(int end, {bool inclusive = true}) => end > this
-      ? [for (var i = this; i < end; i++) i, if (inclusive) end]
-      : [for (var i = this; i > end; i--) i, if (inclusive) end];
-}
+typedef BreathingThings<T extends CanBreathe> = Map<String, T>;
 
-//ex 4 finding duplicate values
-extension on Iterable {
-  bool get containsDuplicateValues => toSet().length != length;
-}
-
-//ex 5 finding and mapping keys and values on maps
-extension Find<K, V, R> on Map<K, V> {
-  R? find<T>(
-    K key,
-    R? Function(T value) cast,
-  ) {
-    final value = this[key];
-    if (value != null && value is T) {
-      return cast(value as T);
-    } else {
-      return null;
+void describe(Iterable<BreathingThings> values) {
+  for (final map in values) {
+    for (final keyAndValues in map.entries) {
+      print('Will call breathe() on ${keyAndValues.key}');
+      keyAndValues.value.breathe();
     }
   }
 }
 
-//ex 6 extending enums
-enum AnimalType { cat, dog, goldFish }
-
-extension on Enum {
-  bool get nameContainsUpperCaseLetters => name.contains(RegExp(r'[A-Z]'));
+mixin CanBreathe {
+  void breathe();
 }
 
-//ex 7 extending functions
-int add(int a, int b) => a + b;
+class Person with CanBreathe {
+  const Person();
 
-int substract(int a, int b) => a - b;
-
-typedef IntFunction = int Function(int, int);
-
-extension on IntFunction {
-  int callWithRandomValues() {
-    final rnd1 = Random().nextInt(100);
-    final rnd2 = Random().nextInt(100);
-    print('Random values =$rnd1, $rnd2');
-    return call(rnd1, rnd2);
+  @override
+  void breathe() {
+    print('Person is breathing..');
   }
 }
 
-//ex 8 why do we need names for extension like ex 2
-class Person {
-  final String name;
-  final int age;
+class Fish with CanBreathe {
+  const Fish();
 
-  const Person({required this.name, required this.age});
+  @override
+  void breathe() {
+    print('Fish is breathing..');
+  }
 }
 
-extension ShortDescription on Person {
-  String get description => '$name ($age)';
-}
+// ex4 unconstrained generic type definition
+typedef KeyValue<K, V> = MapEntry<K, V>;
 
-extension LongDescription on Person {
-  String get description => '$name in ($age) years old';
-}
+// ex5 specializing generic type definition
+typedef JSON<T> = Map<String, T>;
 
 void test() async {
-  //ex1
-  print('Hello'.reversed);
+//ex1
+  final double doubleValue = eitherIntOrDouble();
+  print(doubleValue);
+  final int intValue = eitherIntOrDouble();
+  print(intValue);
 
-  //ex2
-  print([1, 2, 2].sum);
-  print([1.1, 2.2, 3.3].sum);
+//ex2
+  print(doTypesMatch(1, 2));
+  print(doTypesMatch(1, 2.2));
+  print(doTypesMatch(1, 'Foo'));
+  print(doTypesMatch('Foo', 'Bar'));
 
-  //ex3
-  //1.to(10) -> Iterable[1,2,3,4,5,6,7,8,9,10]
-  //1.to(10, inclusive: false)
-  print(1.to(10));
-  print(10.to(1));
-  print(1.to(10, inclusive: false));
-
-  //ex4
-  print([1, 2, 3, 1].containsDuplicateValues); //true
-  print(['a', 'b', 'A'].containsDuplicateValues); //false
-  print(['a', 'b', 'a'].containsDuplicateValues); //true
-
-  //ex5
-  final json = {
-    'Name': 'Foo',
-    'Age': 42,
+//ex3
+  const momAndDad = {
+    'mom': Person(),
+    'dad': Person(),
   };
 
-  final String? ageAsString = json.find<int>(
-    'age',
-    (int age) => age.toString(),
-  );
-  print(ageAsString);
+  const brotherAndSisterAndFish = {
+    'Brother': Person(),
+    'Sister': Person(),
+    'Fishy': Fish(),
+  };
 
-  //ex6
-  print(AnimalType.cat.nameContainsUpperCaseLetters); //false
-  print(AnimalType.goldFish.nameContainsUpperCaseLetters); //true
+  final allValues = [momAndDad, brotherAndSisterAndFish];
+  describe(allValues);
 
-  //ex7
-  print(add.callWithRandomValues());
+//ex4
+  const one = KeyValue(1, 2);
+  print(one);
+  const two = KeyValue(1, 2.2); //MapEntry<int, double>
+  print(two);
+  const three = KeyValue(1, 'Foo'); //MapEntry<int, String
+  print(three);
+  const KeyValue four = KeyValue(1, 2); //MapEntry<dynamic, dynamic>
+  print(four);
 
-  //ex8
-  const jack=Person(name: 'Jack', age: 20);
-  print(ShortDescription(jack).description);
-  print(LongDescription(jack).description);
+//ex5
+  const JSON<String> json = {
+    'name': 'John',
+    //'age': 30,
+    'address': '123 Main st',
+  };
+  print(json);
+
+//ex6
+
+//ex7
+
+//ex8
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+// This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     test();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
+// This is the theme of your application.
+//
+// TRY THIS: Try running your application with "flutter run". You'll see
+// the application has a purple toolbar. Then, without quitting the app,
+// try changing the seedColor in the colorScheme below to Colors.green
+// and then invoke "hot reload" (save your changes or press the "hot
+// reload" button in a Flutter-supported IDE, or press "r" if you used
+// the command line to start the app).
+//
+// Notice that the counter didn't reset back to zero; the application
+// state is not lost during the reload. To reset the state, use hot
+// restart instead.
+//
+// This works for code too, not just values: Most code changes can be
+// tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -167,14 +154,14 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+// This widget is the home page of your application. It is stateful, meaning
+// that it has a State object (defined below) that contains fields that affect
+// how it looks.
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+// This class is the configuration for the state. It holds the values (in this
+// case the title) provided by the parent (in this case the App widget) and
+// used by the build method of the State. Fields in a Widget subclass are
+// always marked "final".
 
   final String title;
 
@@ -187,50 +174,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
+// This call to setState tells the Flutter framework that something has
+// changed in this State, which causes it to rerun the build method below
+// so that the display can reflect the updated values. If we changed
+// _counter without calling setState(), then the build method would not be
+// called again, and so nothing would appear to happen.
       _counter++;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+// This method is rerun every time setState is called, for instance as done
+// by the _incrementCounter method above.
+//
+// The Flutter framework has been optimized to make rerunning build methods
+// fast, so that you can just rebuild anything that needs updating rather
+// than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+// TRY THIS: Try changing the color here to a specific color (to
+// Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+// change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+// Here we take the value from the MyHomePage object that was created by
+// the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+// Center is a layout widget. It takes a single child and positions it
+// in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
+// Column is also a layout widget. It takes a list of children and
+// arranges them vertically. By default, it sizes itself to fit its
+// children horizontally, and tries to be as tall as its parent.
+//
+// Column has various properties to control how it sizes itself and
+// how it positions its children. Here we use mainAxisAlignment to
+// center the children vertically; the main axis here is the vertical
+// axis because Columns are vertical (the cross axis would be
+// horizontal).
+//
+// TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+// action in the IDE, or press "p" in the console), to see the
+// wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
