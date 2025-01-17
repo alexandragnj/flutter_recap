@@ -45,48 +45,50 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Register'),
-        ),
-        body: FutureBuilder(
-            future: Firebase.initializeApp(
-                options: DefaultFirebaseOptions.currentPlatform),
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.done:
-                  return Column(
-                    children: [
-                      TextField(
-                        controller: _email,
-                        decoration: InputDecoration(hintText: 'Email'),
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      TextField(
-                        decoration: InputDecoration(hintText: 'Password'),
-                        controller: _password,
-                        obscureText: true,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          final email = _email.text;
-                          final password = _password.text;
+      appBar: AppBar(
+        title: const Text('Register'),
+      ),
+      body: FutureBuilder(
+        future: Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return Column(
+                children: [
+                  TextField(
+                    controller: _email,
+                    decoration: InputDecoration(hintText: 'Email'),
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'Password'),
+                    controller: _password,
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      final email = _email.text;
+                      final password = _password.text;
 
-                          final userCredential = await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                                  email: email, password: password);
-                          print(userCredential);
-                        },
-                        child: const Text('Register'),
-                      ),
-                    ],
-                  );
-                default:
-                  return Text('Loading...');
-              }
-            }));
+                      final userCredential = await FirebaseAuth.instance
+                          .createUserWithEmailAndPassword(
+                              email: email, password: password);
+                      print(userCredential);
+                    },
+                    child: const Text('Register'),
+                  ),
+                ],
+              );
+            default:
+              return const Text('Loading...');
+          }
+        },
+      ),
+    );
   }
 }
