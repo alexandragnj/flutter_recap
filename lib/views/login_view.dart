@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_recap/constants/routes.dart';
+import 'package:flutter_recap/services/auth/auth_service.dart';
 
+import '../services/auth/auth_exceptions.dart';
 import '../utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
@@ -56,25 +57,20 @@ class _LoginViewState extends State<LoginView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await FirebaseAuth.instance.signInWithEmailAndPassword(
-                    email: email, password: password);
-                final user=FirebaseAuth.instance.currentUser;
-                if(user?.emailVerified ?? false){
+                await AuthService.firebase()
+                    .logIn(email: email, password: password);
+                final user = AuthService.firebase().currentUser;
+                if (user?.isEmailVerified ?? false) {
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(notesRoute, (route) => false);
                 } else {
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
-
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      verifyEmailRoute, (route) => false);
                 }
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'invalid-credential') {
-                  await showErrorDialog(context, 'Invalid credential');
-                } else {
-                  await showErrorDialog(context, e.code);
-                }
-              } catch (e) {
-                await showErrorDialog(context, e.toString());
+              } on UserNotFoundAuthException {
+                await showErrorDialog(context, 'Invalid credential');
+              } on GenericAuthException {
+                await showErrorDialog(context, 'Authentication error');
               }
             },
             child: const Text('Login'),
