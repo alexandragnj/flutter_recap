@@ -12,11 +12,18 @@ class NotesService {
 
   List<DatabaseNotes> _notes = [];
   static final NotesService _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+
+  NotesService._sharedInstance() {
+    _noteStreamController = StreamController<List<DatabaseNotes>>.broadcast(
+      onListen: () {
+        _noteStreamController.sink.add(_notes);
+      },
+    );
+  }
+
   factory NotesService() => _shared;
 
-  final _noteStreamController =
-      StreamController<List<DatabaseNotes>>.broadcast();
+  late final StreamController<List<DatabaseNotes>> _noteStreamController;
 
   Stream<List<DatabaseNotes>> get allNotes => _noteStreamController.stream;
 
@@ -27,7 +34,7 @@ class NotesService {
     } on CouldNotFindUser {
       final createdUser = await createUser(email: email);
       return createdUser;
-    } catch (e){
+    } catch (e) {
       rethrow;
     }
   }
@@ -206,7 +213,7 @@ class NotesService {
   }
 
   Future<void> _ensureDbIsOpen() async {
-    try{
+    try {
       await open();
     } on DatabaseAlreadyOpenException {
       //empty
@@ -306,7 +313,7 @@ const textColumn = 'text';
 const isSyncedWithCloudColumn = 'is_synced_with_cloud';
 const createUserTable = '''CREATE TABLE IF NOT EXISTS "user" (
 	      "id"	INTEGER NOT NULL,
-	      "user"	INTEGER NOT NULL UNIQUE,
+	      "email"	TEXT NOT NULL UNIQUE,
 	      PRIMARY KEY("id" AUTOINCREMENT)
        );''';
 const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
