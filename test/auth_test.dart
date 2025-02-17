@@ -42,16 +42,17 @@ void main() {
 
       final badPassword =
           provider.createUser(email: 'someone@bar.com', password: 'foobar');
-      expect(badPassword, throwsA(const TypeMatcher<UserNotFoundAuthException>()));
+      expect(
+          badPassword, throwsA(const TypeMatcher<UserNotFoundAuthException>()));
 
       final user = await provider.createUser(email: 'foo', password: 'bar');
       expect(provider.currentUser, user);
       expect(user.isEmailVerified, false);
     });
 
-    test('Login user should be able to get verified', (){
+    test('Login user should be able to get verified', () {
       provider.sendEmailVerification();
-      final user=provider.currentUser;
+      final user = provider.currentUser;
       expect(user, isNotNull);
       expect(user!.isEmailVerified, true);
     });
@@ -59,11 +60,9 @@ void main() {
     test('Should be able to loug out and log in again', () async {
       await provider.logOut();
       await provider.logIn(email: 'email', password: 'password');
-      final user=provider.currentUser;
+      final user = provider.currentUser;
       expect(user, isNotNull);
     });
-
-
   });
 }
 
@@ -105,7 +104,8 @@ class MockAuthProvider implements AuthProvider {
     if (!isInitalized) throw NotInitializedException();
     if (email == 'foo@bar.com') throw UserNotFoundAuthException();
     if (password == 'foobar') throw UserNotFoundAuthException();
-    const user = AuthUser(isEmailVerified: false, email: 'foo@bar.com');
+    const user =
+        AuthUser(id: 'my_id', isEmailVerified: false, email: 'foo@bar.com');
     _user = user;
     return Future.value(user);
   }
@@ -123,7 +123,8 @@ class MockAuthProvider implements AuthProvider {
     if (!isInitalized) throw NotInitializedException();
     final user = _user;
     if (user == null) throw UserNotFoundAuthException();
-    const newUser = AuthUser(isEmailVerified: true, email: 'foo@bar.com');
+    const newUser =
+        AuthUser(id: 'my_id', isEmailVerified: true, email: 'foo@bar.com');
     _user = newUser;
   }
 }
